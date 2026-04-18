@@ -30,7 +30,7 @@ def goal_keyboard() -> ReplyKeyboardMarkup:
 def programs_keyboard() -> ReplyKeyboardMarkup:
     """Клавиатура выбора программы обучения"""
     buttons = [
-        [KeyboardButton(text="1+4 (язык + бакалавриат")],
+        [KeyboardButton(text="1+4 (язык + бакалавриат)")],
         [KeyboardButton(text="1+3 (язык + бакалавриат ускоренный)")],
         [KeyboardButton(text="Бакалавриат 4 года")],
         [KeyboardButton(text="Магистратура 2 года")],
@@ -42,7 +42,7 @@ def programs_keyboard() -> ReplyKeyboardMarkup:
 def city_choice_keyboard(cities: list) -> ReplyKeyboardMarkup:
     """Клавиатура выбора города"""
     buttons = []
-    for city in cities[:8]:
+    for city in cities[:12]:
         buttons.append([KeyboardButton(text=city)])
     buttons.append([KeyboardButton(text="🔍 Поиск по названию")])
     buttons.append([KeyboardButton(text="◀ На главную")])
@@ -52,9 +52,32 @@ def university_list_keyboard(universities: list) -> ReplyKeyboardMarkup:
     """Клавиатура выбора университета"""
     buttons = []
     for uni in universities[:10]:
-        buttons.append([KeyboardButton(text=f"{uni.get('name_ru', 'Университет')[:30]}")])
-    buttons.append([KeyboardButton(text="◀ Назад к городам")])
+        name = uni.get('name_ru', 'Университет')[:35]
+        buttons.append([KeyboardButton(text=f"🏛 {name}")])
+    buttons.append([KeyboardButton(text="◀ Назад к программам")])
     buttons.append([KeyboardButton(text="🏠 Главное меню")])
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+
+def guide_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура гида по жизни"""
+    buttons = [
+        [KeyboardButton(text="🏦 Как открыть банковский счет")],
+        [KeyboardButton(text="📱 Мобильная связь")],
+        [KeyboardButton(text="🚇 Транспорт")],
+        [KeyboardButton(text="📱 Приложения для жизни")],
+        [KeyboardButton(text="◀ На главную")]
+    ]
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+
+def faq_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура FAQ"""
+    buttons = [
+        [KeyboardButton(text="❓ Как зарегистрироваться в WeChat?")],
+        [KeyboardButton(text="❓ Как завести Alipay?")],
+        [KeyboardButton(text="❓ Как получить студенческую визу?")],
+        [KeyboardButton(text="❓ Сколько стоит жизнь в Китае?")],
+        [KeyboardButton(text="◀ На главную")]
+    ]
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
 def back_to_main_button() -> ReplyKeyboardMarkup:
