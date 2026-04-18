@@ -6,7 +6,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import ParseMode
+from aiogram.enums import ParseMode
 
 from config import BOT_TOKEN, PORT
 from handlers import start, admission, exchange, guide, faq, manager
