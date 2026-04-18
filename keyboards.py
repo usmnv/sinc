@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 def main_menu_keyboard() -> InlineKeyboardMarkup:
+    """Главное меню - всегда инлайн кнопки"""
     builder = InlineKeyboardBuilder()
     builder.button(text="🎓 Поступление", callback_data="menu_admission")
     builder.button(text="💱 Обменник валют", callback_data="menu_exchange")
@@ -11,16 +12,17 @@ def main_menu_keyboard() -> InlineKeyboardMarkup:
     builder.adjust(1)
     return builder.as_markup()
 
-def back_to_main_button() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(text="◀ На главную", callback_data="back_main")
-    return builder.as_markup()
+def remove_keyboard() -> ReplyKeyboardMarkup:
+    """Убирает Reply клавиатуру"""
+    return ReplyKeyboardMarkup(keyboard=[[]], resize_keyboard=True)
 
 def phone_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура для отправки номера телефона"""
     button = KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)
     return ReplyKeyboardMarkup(keyboard=[[button]], resize_keyboard=True)
 
 def goal_keyboard() -> InlineKeyboardMarkup:
+    """Клавиатура выбора цели (инлайн)"""
     builder = InlineKeyboardBuilder()
     builder.button(text="🎓 Бакалавриат", callback_data="goal_bachelor")
     builder.button(text="🇨🇳 Изучение китайского языка", callback_data="goal_language")
