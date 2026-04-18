@@ -22,7 +22,7 @@ async def admission_menu(callback: CallbackQuery):
     programs = await get_all_programs()
     await callback.message.edit_text(
         "🎓 *Выбери программу обучения:*",
-        parse_mode="Markdown",
+        parse_mode=ParseMode.MARKDOWN,
         reply_markup=programs_keyboard(programs)
     )
     await callback.answer()
@@ -40,7 +40,7 @@ async def program_selected(callback: CallbackQuery, state: FSMContext):
     cities = await get_cities_list()
     await callback.message.edit_text(
         "📍 *Выбери город:*",
-        parse_mode="Markdown",
+        parse_mode=ParseMode.MARKDOWN,
         reply_markup=city_choice_keyboard(cities)
     )
     await callback.answer()
@@ -67,14 +67,14 @@ async def city_selected(callback: CallbackQuery, state: FSMContext):
     
     await callback.message.edit_text(
         text,
-        parse_mode="Markdown",
+        parse_mode=ParseMode.MARKDOWN,
         reply_markup=university_list_keyboard(filtered[:20], program_code)
     )
     await callback.answer()
 
 @router.callback_query(F.data == "city_search")
 async def search_city_prompt(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer("🔍 *Введи название города:*", parse_mode="Markdown")
+    await callback.message.answer("🔍 *Введи название города:*", parse_mode=ParseMode.MARKDOWN)
     await state.set_state(CitySearch.waiting_city_name)
     await callback.answer()
 
@@ -88,7 +88,7 @@ async def handle_city_search(message: Message, state: FSMContext):
     else:
         for uni in universities:
             text = f"🏛 *{uni['name_ru']}*\n📍 {uni['city']}\n📚 {uni['duration']}\n💰 {uni['price_per_year']} ¥/год\n\n{uni['description']}"
-            await message.answer(text, parse_mode="Markdown")
+            await message.answer(text, parse_mode=ParseMode.MARKDOWN)
         await message.answer("Нажми /start для возврата в меню")
     await state.clear()
 
@@ -102,7 +102,7 @@ async def show_university_detail(callback: CallbackQuery):
     if response.data:
         uni = response.data[0]
         text = f"🏛 *{uni['name_ru']}*\n📖 *Китайское название:* {uni['name_cn']}\n📍 *Город:* {uni['city']}\n📚 *Программа:* {uni['duration']}\n💰 *Стоимость:* {uni['price_per_year']} ¥/год\n\n📝 *Описание:*\n{uni['description']}"
-        await callback.message.answer(text, parse_mode="Markdown")
+        await callback.message.answer(text, parse_mode=ParseMode.MARKDOWN)
     else:
         await callback.answer("Университет не найден")
     await callback.answer()
