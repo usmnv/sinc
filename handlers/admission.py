@@ -4,12 +4,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.enums import ParseMode
 
 from database import (
-    get_all_programs, get_universities_by_program,
-    get_universities_by_city, get_cities_list
+    get_universities_by_program, get_universities_by_city, get_cities_list
 )
 from keyboards import (
     programs_keyboard, city_choice_keyboard,
-    back_to_main_button, main_menu_keyboard, remove_keyboard
+    back_to_main_button, main_menu_keyboard
 )
 from states import CitySearch
 
@@ -22,6 +21,15 @@ PROGRAM_TEXT_TO_ID = {
     "Бакалавриат 4 года": 3,
     "Магистратура 2 года": 4,
     "1 год языкового курса": 5,
+}
+
+# Словарь для обратного преобразования ID в текст
+PROGRAM_ID_TO_TEXT = {
+    1: "1+4 (язык + бакалавриат)",
+    2: "1+3 (язык + бакалавриат ускоренный)",
+    3: "Бакалавриат 4 года",
+    4: "Магистратура 2 года",
+    5: "1 год языкового курса",
 }
 
 @router.message(F.text == "🎓 Поступление")
@@ -49,7 +57,7 @@ async def program_selected(message: Message, state: FSMContext):
         return
     
     # Сохраняем выбранную программу
-    await state.update_data(program_code=str(program_id), program_id=program_id)
+    await state.update_data(program_code=str(program_id), program_id=program_id, program_text=program_text)
     
     cities = await get_cities_list()
     
@@ -79,17 +87,13 @@ async def back_to_main(message: Message):
         reply_markup=main_menu_keyboard()
     )
 
-@router.message(F.text)  # Обрабатываем выбор города (Пекин, Шанхай и т.д.)
+# Обработчик для выбора города из списка
+@router.message(F.text.in_(['Пекин', 'Шанхай', 'Гуанчжоу', 'Шэньчжэнь', 'Ханчжоу', 'Нанкин', 'Чэнду', 'Ухань']))
 async def city_selected(message: Message, state: FSMContext):
     city = message.text.strip()
-    
-    # Проверяем, что это не команда и не кнопка навигации
-    if city in ["🎓 Поступление", "💱 Обменник валют", "🇨🇳 Гид по жизни", "❓ Вопросы и ответы", "📞 Связаться с менеджером"]:
-        return
-    
     data = await state.get_data()
     program_id = data.get("program_id")
-    program_text = data.get("program_text")
+    program_text = data.get("program_text", "выбранной программе")
     
     if not program_id:
         await message.answer("❌ Сначала выбери программу обучения.")
@@ -103,7 +107,7 @@ async def city_selected(message: Message, state: FSMContext):
     
     if not filtered:
         await message.answer(
-            f"❌ В городе {city} нет вузов по выбранной программе.\n\n"
+            f"❌ В городе {city} нет вузов по {program_text}.\n\n"
             f"Попробуй выбрать другой город.",
             reply_markup=back_to_main_button()
         )
@@ -140,6 +144,7 @@ async def handle_city_search(message: Message, state: FSMContext):
     
     data = await state.get_data()
     program_id = data.get("program_id")
+    program_text = data.get("program_text", "выбранной программе")
     
     if not program_id:
         await message.answer("❌ Сначала выбери программу обучения.")
@@ -150,7 +155,7 @@ async def handle_city_search(message: Message, state: FSMContext):
     
     if not universities:
         await message.answer(
-            f"❌ Город '{city}' не найден.\n\nПопробуй другой город.",
+            f"❌ Город '{city}' не найден или в нем нет вузов по {program_text}.\n\nПопробуй другой город.",
             reply_markup=back_to_main_button()
         )
     else:
