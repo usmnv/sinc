@@ -27,11 +27,9 @@ def run_health_server():
     server.serve_forever()
 
 async def main():
-    # Создаем бота
     bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.MARKDOWN)
     dp = Dispatcher(storage=MemoryStorage())
     
-    # Подключаем роутеры
     dp.include_router(start.router)
     dp.include_router(admission.router)
     dp.include_router(exchange.router)
@@ -39,17 +37,16 @@ async def main():
     dp.include_router(faq.router)
     dp.include_router(manager.router)
     
-    # Запускаем healthcheck сервер
     health_thread = Thread(target=run_health_server, daemon=True)
     health_thread.start()
     
-    logging.info("Бот запущен!")
+    logging.info("🚀 Бот запущен!")
     
     while True:
         try:
             await dp.start_polling(bot)
         except Exception as e:
-            logging.error(f"Ошибка в polling: {e}")
+            logging.error(f"Ошибка: {e}")
             await asyncio.sleep(5)
 
 if __name__ == "__main__":
