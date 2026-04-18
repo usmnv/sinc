@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from aiogram.enums import ParseMode
 
 from database import (
     get_all_programs, get_universities_by_program,
