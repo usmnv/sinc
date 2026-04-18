@@ -1,13 +1,12 @@
 import asyncio
 import logging
 import os
-import sys
 from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.client.default import DefaultBotProperties
+from aiogram.types import ParseMode
 
 from config import BOT_TOKEN, PORT
 from handlers import start, admission, exchange, guide, faq, manager
@@ -28,9 +27,11 @@ def run_health_server():
     server.serve_forever()
 
 async def main():
-    bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
+    # Создаем бота
+    bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.MARKDOWN)
     dp = Dispatcher(storage=MemoryStorage())
     
+    # Подключаем роутеры
     dp.include_router(start.router)
     dp.include_router(admission.router)
     dp.include_router(exchange.router)
@@ -38,6 +39,7 @@ async def main():
     dp.include_router(faq.router)
     dp.include_router(manager.router)
     
+    # Запускаем healthcheck сервер
     health_thread = Thread(target=run_health_server, daemon=True)
     health_thread.start()
     
@@ -47,7 +49,7 @@ async def main():
         try:
             await dp.start_polling(bot)
         except Exception as e:
-            logging.error(f"Ошибка: {e}")
+            logging.error(f"Ошибка в polling: {e}")
             await asyncio.sleep(5)
 
 if __name__ == "__main__":
