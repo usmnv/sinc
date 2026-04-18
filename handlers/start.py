@@ -1,21 +1,14 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery, Contact, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, Contact, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from aiogram.enums import ParseMode
 
 from database import user_exists, register_user, get_user
-from keyboards import main_menu_keyboard, goal_keyboard
+from keyboards import main_menu_keyboard, phone_keyboard, goal_keyboard, remove_keyboard
 from states import Registration
 
 router = Router()
-
-def phone_keyboard():
-    button = KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)
-    return ReplyKeyboardMarkup(keyboard=[[button]], resize_keyboard=True)
-
-def remove_keyboard():
-    return ReplyKeyboardMarkup(keyboard=[[]], resize_keyboard=True)
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
@@ -55,7 +48,7 @@ async def process_phone(message: Message, state: FSMContext):
     phone = contact.phone_number
     await state.update_data(phone=phone)
     
-    # Убираем клавиатуру с номером телефона!
+    # Убираем клавиатуру с кнопкой номера!
     await message.answer("✅ Номер получен!", reply_markup=remove_keyboard())
     
     await message.answer(
@@ -79,20 +72,22 @@ async def process_city(message: Message, state: FSMContext):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=goal_keyboard()
     )
+    await state.set_state(Registration.waiting_goal)
 
-@router.callback_query(F.data.startswith("goal_"))
-async def process_goal(callback: CallbackQuery, state: FSMContext):
+@router.message(Registration.waiting_goal)
+async def process_goal(message: Message, state: FSMContext):
+    goal_text = message.text
     goal_map = {
-        "goal_bachelor": "Поступление в бакалавриат",
-        "goal_language": "Изучение китайского языка",
-        "goal_master": "Магистратура",
-        "goal_preparation": "Подготовительные курсы",
-        "goal_other": "Другое"
+        "Бакалавриат": "Поступление в бакалавриат",
+        "Изучение китайского языка": "Изучение китайского языка",
+        "Магистратура": "Магистратура",
+        "Подготовительные курсы": "Подготовительные курсы",
+        "Другое": "Другое"
     }
     
-    goal = goal_map.get(callback.data, "Не указано")
+    goal = goal_map.get(goal_text, goal_text)
     data = await state.get_data()
-    tg_id = callback.from_user.id
+    tg_id = message.from_user.id
     
     await register_user(
         tg_id=tg_id,
@@ -102,35 +97,25 @@ async def process_goal(callback: CallbackQuery, state: FSMContext):
         goal=goal
     )
     
-    # Удаляем сообщение с кнопками целей
-    await callback.message.delete()
+    # Убираем клавиатуру с целями
+    await message.answer("✅ Регистрация завершена!", reply_markup=remove_keyboard())
     
-    # Показываем главное меню
-    await callback.message.answer(
+    await message.answer(
         f"✅ *Регистрация завершена, {data['name']}!*\n\n"
         f"Теперь ты можешь пользоваться всеми функциями бота.",
         parse_mode=ParseMode.MARKDOWN
     )
     
-    await callback.message.answer(
+    await message.answer(
         "🏠 *Главное меню*\n\nВыбери нужный раздел:",
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=main_menu_keyboard()
     )
     await state.clear()
-    await callback.answer()
-
-@router.callback_query(F.data == "back_main")
-async def back_to_main(callback: CallbackQuery):
-    await callback.message.edit_text(
-        "🏠 *Главное меню*\n\nВыбери нужный раздел:",
-        parse_mode=ParseMode.MARKDOWN,
-        reply_markup=main_menu_keyboard()
-    )
-    await callback.answer()
 
 @router.message(Command("menu"))
 async def cmd_menu(message: Message):
+    await message.answer("✅", reply_markup=remove_keyboard())
     await message.answer(
         "🏠 *Главное меню*",
         parse_mode=ParseMode.MARKDOWN,
