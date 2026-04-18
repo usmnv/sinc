@@ -12,6 +12,12 @@ def main_menu_keyboard() -> InlineKeyboardMarkup:
     builder.adjust(1)
     return builder.as_markup()
 
+def back_to_main_button() -> InlineKeyboardMarkup:
+    """Кнопка возврата в главное меню"""
+    builder = InlineKeyboardBuilder()
+    builder.button(text="◀ На главную", callback_data="back_main")
+    return builder.as_markup()
+
 def remove_keyboard() -> ReplyKeyboardMarkup:
     """Убирает Reply клавиатуру"""
     return ReplyKeyboardMarkup(keyboard=[[]], resize_keyboard=True)
