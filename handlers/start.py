@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery, Contact, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, CallbackQuery, Contact, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.enums import ParseMode
 
@@ -10,12 +10,10 @@ from states import Registration
 
 router = Router()
 
-# Клавиатура для отправки номера
 def phone_keyboard():
     button = KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)
     return ReplyKeyboardMarkup(keyboard=[[button]], resize_keyboard=True)
 
-# Клавиатура для удаления (пустая)
 def remove_keyboard():
     return ReplyKeyboardMarkup(keyboard=[[]], resize_keyboard=True)
 
@@ -25,7 +23,9 @@ async def cmd_start(message: Message, state: FSMContext):
     
     if await user_exists(tg_id):
         user = await get_user(tg_id)
-        # Убираем старую клавиатуру и показываем главное меню
+        # Убираем старую клавиатуру
+        await message.answer("✅", reply_markup=remove_keyboard())
+        # Показываем главное меню
         await message.answer(
             f"👋 С возвращением, {user['name']}!",
             reply_markup=remove_keyboard()
@@ -56,11 +56,8 @@ async def process_phone(message: Message, state: FSMContext):
     phone = contact.phone_number
     await state.update_data(phone=phone)
     
-    # Убираем клавиатуру с кнопкой номера
-    await message.answer(
-        "✅ Номер получен!",
-        reply_markup=remove_keyboard()
-    )
+    # Убираем клавиатуру
+    await message.answer("✅ Номер получен!", reply_markup=remove_keyboard())
     
     await message.answer(
         "🏙 *Из какого ты города?*\n\nНапиши название города (например: Пекин, Шанхай, Москва):",
@@ -106,7 +103,7 @@ async def process_goal(callback: CallbackQuery, state: FSMContext):
         goal=goal
     )
     
-    # Удаляем сообщение с кнопками целей
+    # Удаляем сообщение с кнопками
     await callback.message.delete()
     
     # Показываем главное меню
