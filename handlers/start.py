@@ -1,7 +1,8 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery, Contact
+from aiogram.types import Message, CallbackQuery, Contact, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
+from aiogram.enums import ParseMode
 
 from database import user_exists, register_user, get_user
 from keyboards import main_menu_keyboard, phone_keyboard, goal_keyboard
