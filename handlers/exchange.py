@@ -1,14 +1,15 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery
+from aiogram.types import Message
+from aiogram.enums import ParseMode
 import aiohttp
 from datetime import datetime
 
-from keyboards import back_to_main_button
+from keyboards import back_to_main_button, main_menu_keyboard
 
 router = Router()
 
-@router.callback_query(F.data == "menu_exchange")
-async def exchange_menu(callback: CallbackQuery):
+@router.message(F.text == "💱 Обменник валют")
+async def exchange_menu(message: Message):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get("https://api.exchangerate-api.com/v4/latest/CNY") as resp:
@@ -29,5 +30,8 @@ async def exchange_menu(callback: CallbackQuery):
     except:
         text = "💱 *Курс валют*\n\n1 CNY ≈ 0.14 USD | 12.5 RUB | 62 KZT\n\n⚠️ Данные примерные"
     
-    await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=back_to_main_button())
-    await callback.answer()
+    await message.answer(
+        text,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=back_to_main_button()
+    )
