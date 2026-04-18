@@ -25,7 +25,6 @@ async def cmd_start(message: Message, state: FSMContext):
         user = await get_user(tg_id)
         # Убираем старую клавиатуру
         await message.answer("✅", reply_markup=remove_keyboard())
-        # Показываем главное меню
         await message.answer(
             f"👋 С возвращением, {user['name']}!",
             reply_markup=remove_keyboard()
@@ -56,7 +55,7 @@ async def process_phone(message: Message, state: FSMContext):
     phone = contact.phone_number
     await state.update_data(phone=phone)
     
-    # Убираем клавиатуру
+    # Убираем клавиатуру с номером телефона!
     await message.answer("✅ Номер получен!", reply_markup=remove_keyboard())
     
     await message.answer(
@@ -103,7 +102,7 @@ async def process_goal(callback: CallbackQuery, state: FSMContext):
         goal=goal
     )
     
-    # Удаляем сообщение с кнопками
+    # Удаляем сообщение с кнопками целей
     await callback.message.delete()
     
     # Показываем главное меню
