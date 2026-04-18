@@ -1,80 +1,67 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
-def main_menu_keyboard() -> InlineKeyboardMarkup:
-    """Главное меню"""
-    builder = InlineKeyboardBuilder()
-    builder.button(text="🎓 Поступление", callback_data="menu_admission")
-    builder.button(text="💱 Обменник валют", callback_data="menu_exchange")
-    builder.button(text="🇨🇳 Гид по жизни", callback_data="menu_guide")
-    builder.button(text="❓ Вопросы и ответы", callback_data="menu_faq")
-    builder.button(text="📞 Связаться с менеджером", callback_data="menu_manager")
-    builder.adjust(1)
-    return builder.as_markup()
-
-def back_to_main_button() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(text="◀ На главную", callback_data="back_main")
-    return builder.as_markup()
-
-def remove_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(keyboard=[[]], resize_keyboard=True)
+def main_menu_keyboard() -> ReplyKeyboardMarkup:
+    """Главное меню - ReplyKeyboard кнопки внизу"""
+    buttons = [
+        [KeyboardButton(text="🎓 Поступление")],
+        [KeyboardButton(text="💱 Обменник валют")],
+        [KeyboardButton(text="🇨🇳 Гид по жизни")],
+        [KeyboardButton(text="❓ Вопросы и ответы")],
+        [KeyboardButton(text="📞 Связаться с менеджером")]
+    ]
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
 def phone_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура для отправки номера телефона"""
     button = KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)
     return ReplyKeyboardMarkup(keyboard=[[button]], resize_keyboard=True)
 
-def goal_keyboard() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(text="🎓 Бакалавриат", callback_data="goal_bachelor")
-    builder.button(text="🇨🇳 Изучение китайского языка", callback_data="goal_language")
-    builder.button(text="📚 Магистратура", callback_data="goal_master")
-    builder.button(text="📖 Подготовительные курсы", callback_data="goal_preparation")
-    builder.button(text="🏫 Другое", callback_data="goal_other")
-    builder.adjust(1)
-    return builder.as_markup()
+def goal_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура выбора цели"""
+    buttons = [
+        [KeyboardButton(text="🎓 Бакалавриат")],
+        [KeyboardButton(text="🇨🇳 Изучение китайского языка")],
+        [KeyboardButton(text="📚 Магистратура")],
+        [KeyboardButton(text="📖 Подготовительные курсы")],
+        [KeyboardButton(text="🏫 Другое")]
+    ]
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
-def programs_keyboard(programs: list) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    for prog in programs:
-        builder.button(text=prog.get("name", "Неизвестно"), callback_data=f"prog_{prog.get('code', '')}")
-    builder.button(text="◀ На главную", callback_data="back_main")
-    builder.adjust(1)
-    return builder.as_markup()
+def programs_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура выбора программы обучения"""
+    buttons = [
+        [KeyboardButton(text="1+4 (язык + бакалавриат")],
+        [KeyboardButton(text="1+3 (язык + бакалавриат ускоренный)")],
+        [KeyboardButton(text="Бакалавриат 4 года")],
+        [KeyboardButton(text="Магистратура 2 года")],
+        [KeyboardButton(text="1 год языкового курса")],
+        [KeyboardButton(text="◀ На главную")]
+    ]
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
-def city_choice_keyboard(cities: list) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    for city in cities[:12]:
-        builder.button(text=f"🏙 {city}", callback_data=f"city_{city}")
-    builder.button(text="🔍 Поиск по названию", callback_data="city_search")
-    builder.button(text="◀ На главную", callback_data="back_main")
-    builder.adjust(2)
-    return builder.as_markup()
+def city_choice_keyboard(cities: list) -> ReplyKeyboardMarkup:
+    """Клавиатура выбора города"""
+    buttons = []
+    for city in cities[:8]:
+        buttons.append([KeyboardButton(text=city)])
+    buttons.append([KeyboardButton(text="🔍 Поиск по названию")])
+    buttons.append([KeyboardButton(text="◀ На главную")])
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
-def university_list_keyboard(universities: list, program_code: str) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    for uni in universities[:20]:
-        name = uni.get("name_ru", "Университет")[:35]
-        builder.button(text=f"📚 {name}", callback_data=f"uni_{uni.get('id')}")
-    builder.button(text="◀ Назад к городам", callback_data=f"prog_{program_code}")
-    builder.button(text="🏠 Главное меню", callback_data="back_main")
-    builder.adjust(1)
-    return builder.as_markup()
+def university_list_keyboard(universities: list) -> ReplyKeyboardMarkup:
+    """Клавиатура выбора университета"""
+    buttons = []
+    for uni in universities[:10]:
+        buttons.append([KeyboardButton(text=f"{uni.get('name_ru', 'Университет')[:30]}")])
+    buttons.append([KeyboardButton(text="◀ Назад к городам")])
+    buttons.append([KeyboardButton(text="🏠 Главное меню")])
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
-def faq_keyboard(faq_list: list) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    for faq in faq_list[:15]:
-        question = faq.get("question", "Вопрос")[:45]
-        builder.button(text=f"❓ {question}", callback_data=f"faq_{faq.get('id')}")
-    builder.button(text="◀ На главную", callback_data="back_main")
-    builder.adjust(1)
-    return builder.as_markup()
+def back_to_main_button() -> ReplyKeyboardMarkup:
+    """Кнопка возврата в главное меню"""
+    buttons = [[KeyboardButton(text="◀ На главную")]]
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
-def guide_keyboard(articles: list) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    for article in articles[:10]:
-        title = article.get("title", "Статья")[:40]
-        builder.button(text=f"📖 {title}", callback_data=f"guide_{article.get('id')}")
-    builder.button(text="◀ На главную", callback_data="back_main")
-    builder.adjust(1)
-    return builder.as_markup()
+def remove_keyboard() -> ReplyKeyboardRemove:
+    """Убирает клавиатуру"""
+    return ReplyKeyboardRemove()
