@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import random
 from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -27,6 +28,9 @@ def run_health_server():
     server.serve_forever()
 
 async def main():
+    # Случайная задержка для избежания конфликта polling
+    await asyncio.sleep(random.uniform(1, 3))
+    
     bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.MARKDOWN)
     dp = Dispatcher(storage=MemoryStorage())
     
