@@ -7,29 +7,19 @@ from database import (
     get_universities_by_program, get_universities_by_city, get_cities_list
 )
 from keyboards import (
-    programs_keyboard, city_choice_keyboard,
+    programs_keyboard, create_city_keyboard,
     back_to_main_button, main_menu_keyboard
 )
 from states import CitySearch
 
 router = Router()
 
-# Соответствие текстов программ ID
 PROGRAM_TEXT_TO_ID = {
     "1+4 (язык + бакалавриат)": 1,
     "1+3 (язык + бакалавриат ускоренный)": 2,
     "Бакалавриат 4 года": 3,
     "Магистратура 2 года": 4,
     "1 год языкового курса": 5,
-}
-
-# Словарь для обратного преобразования ID в текст
-PROGRAM_ID_TO_TEXT = {
-    1: "1+4 (язык + бакалавриат)",
-    2: "1+3 (язык + бакалавриат ускоренный)",
-    3: "Бакалавриат 4 года",
-    4: "Магистратура 2 года",
-    5: "1 год языкового курса",
 }
 
 @router.message(F.text == "🎓 Поступление")
@@ -56,7 +46,6 @@ async def program_selected(message: Message, state: FSMContext):
         await message.answer("❌ Программа не найдена")
         return
     
-    # Сохраняем выбранную программу
     await state.update_data(program_code=str(program_id), program_id=program_id, program_text=program_text)
     
     cities = await get_cities_list()
@@ -68,13 +57,13 @@ async def program_selected(message: Message, state: FSMContext):
     await message.answer(
         f"📍 *Выбери город для программы:*\n{program_text}",
         parse_mode=ParseMode.MARKDOWN,
-        reply_markup=city_choice_keyboard(cities)
+        reply_markup=create_city_keyboard(cities)
     )
 
 @router.message(F.text == "🔍 Поиск по названию")
 async def search_city_prompt(message: Message, state: FSMContext):
     await message.answer(
-        "🔍 *Введи название города:*\n\nНапример: Пекин, Шанхай, Гуанчжоу",
+        "🔍 *Введи название города:*\n\nНапример: Пекин, Шанхай, Нинбо, Чанчунь",
         parse_mode=ParseMode.MARKDOWN
     )
     await state.set_state(CitySearch.waiting_city_name)
@@ -87,8 +76,7 @@ async def back_to_main(message: Message):
         reply_markup=main_menu_keyboard()
     )
 
-# Обработчик для выбора города из списка
-@router.message(F.text.in_(['Пекин', 'Шанхай', 'Гуанчжоу', 'Шэньчжэнь', 'Ханчжоу', 'Нанкин', 'Чэнду', 'Ухань']))
+@router.message(lambda message: message.text not in ["🎓 Поступление", "💱 Обменник валют", "🇨🇳 Гид по жизни", "❓ Вопросы и ответы", "📞 Связаться с менеджером", "◀ На главную", "🔍 Поиск по названию"])
 async def city_selected(message: Message, state: FSMContext):
     city = message.text.strip()
     data = await state.get_data()
@@ -96,24 +84,23 @@ async def city_selected(message: Message, state: FSMContext):
     program_text = data.get("program_text", "выбранной программе")
     
     if not program_id:
-        await message.answer("❌ Сначала выбери программу обучения.")
+        await message.answer("❌ Сначала выбери программу обучения.", reply_markup=main_menu_keyboard())
         return
     
-    # Получаем университеты по программе
     universities = await get_universities_by_program(program_id)
-    
-    # Фильтруем по городу
     filtered = [u for u in universities if u.get("city", "").lower() == city.lower()]
     
     if not filtered:
+        cities = await get_cities_list()
         await message.answer(
             f"❌ В городе {city} нет вузов по {program_text}.\n\n"
+            f"📋 *Доступные города:*\n{', '.join(cities)}\n\n"
             f"Попробуй выбрать другой город.",
+            parse_mode=ParseMode.MARKDOWN,
             reply_markup=back_to_main_button()
         )
         return
     
-    # Показываем каждый университет отдельно
     await message.answer(
         f"🏛 *Найдено {len(filtered)} университетов в городе {city}:*\n",
         parse_mode=ParseMode.MARKDOWN
@@ -141,7 +128,6 @@ async def city_selected(message: Message, state: FSMContext):
 @router.message(CitySearch.waiting_city_name)
 async def handle_city_search(message: Message, state: FSMContext):
     city = message.text.strip()
-    
     data = await state.get_data()
     program_id = data.get("program_id")
     program_text = data.get("program_text", "выбранной программе")
@@ -154,8 +140,11 @@ async def handle_city_search(message: Message, state: FSMContext):
     universities = await get_universities_by_city(city)
     
     if not universities:
+        cities = await get_cities_list()
         await message.answer(
-            f"❌ Город '{city}' не найден или в нем нет вузов по {program_text}.\n\nПопробуй другой город.",
+            f"❌ Город '{city}' не найден или в нем нет вузов по {program_text}.\n\n"
+            f"📋 *Доступные города:*\n{', '.join(cities)}",
+            parse_mode=ParseMode.MARKDOWN,
             reply_markup=back_to_main_button()
         )
     else:
