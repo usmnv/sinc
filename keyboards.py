@@ -70,3 +70,11 @@ def back_to_main_button() -> ReplyKeyboardMarkup:
 
 def remove_keyboard() -> ReplyKeyboardRemove:
     return ReplyKeyboardRemove()
+def create_city_keyboard(cities: list) -> ReplyKeyboardMarkup:
+    """Динамическая клавиатура выбора города из списка БД"""
+    buttons = []
+    for city in cities[:15]:
+        buttons.append([KeyboardButton(text=city)])
+    buttons.append([KeyboardButton(text="🔍 Поиск по названию")])
+    buttons.append([KeyboardButton(text="◀ На главную")])
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
