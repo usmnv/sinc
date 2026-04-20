@@ -85,7 +85,6 @@ async def back_to_main(message: Message):
         reply_markup=main_menu_keyboard()
     )
 
-# Обработчик для выбора города (только если есть выбранная программа)
 @router.message(lambda message: message.text not in IGNORED_BUTTONS)
 async def city_selected(message: Message, state: FSMContext):
     city = message.text.strip()
@@ -93,7 +92,6 @@ async def city_selected(message: Message, state: FSMContext):
     program_id = data.get("program_id")
     program_text = data.get("program_text", "выбранной программе")
     
-    # Если нет выбранной программы - игнорируем (это не город)
     if not program_id:
         return
     
