@@ -22,6 +22,15 @@ PROGRAM_TEXT_TO_ID = {
     "1 год языкового курса": 5,
 }
 
+# Список кнопок, которые НЕ должны обрабатываться как города
+IGNORED_BUTTONS = [
+    "🎓 Поступление", "💱 Обменник валют", "🇨🇳 Гид по жизни", 
+    "❓ Вопросы и ответы", "📞 Связаться с менеджером", "◀ На главную", 
+    "🔍 Поиск по названию", "🏦 Как открыть банковский счет", "📱 Мобильная связь",
+    "🚇 Транспорт", "📱 Приложения для жизни", "❓ Как зарегистрироваться в WeChat?",
+    "❓ Как завести Alipay?", "❓ Как получить студенческую визу?", "❓ Сколько стоит жизнь в Китае?"
+]
+
 @router.message(F.text == "🎓 Поступление")
 async def admission_menu(message: Message, state: FSMContext):
     await state.update_data(program_code=None, program_id=None)
@@ -76,15 +85,16 @@ async def back_to_main(message: Message):
         reply_markup=main_menu_keyboard()
     )
 
-@router.message(lambda message: message.text not in ["🎓 Поступление", "💱 Обменник валют", "🇨🇳 Гид по жизни", "❓ Вопросы и ответы", "📞 Связаться с менеджером", "◀ На главную", "🔍 Поиск по названию"])
+# Обработчик для выбора города (только если есть выбранная программа)
+@router.message(lambda message: message.text not in IGNORED_BUTTONS)
 async def city_selected(message: Message, state: FSMContext):
     city = message.text.strip()
     data = await state.get_data()
     program_id = data.get("program_id")
     program_text = data.get("program_text", "выбранной программе")
     
+    # Если нет выбранной программы - игнорируем (это не город)
     if not program_id:
-        await message.answer("❌ Сначала выбери программу обучения.", reply_markup=main_menu_keyboard())
         return
     
     universities = await get_universities_by_program(program_id)
