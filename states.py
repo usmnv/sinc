@@ -7,3 +7,6 @@ class Registration(StatesGroup):
 
 class CitySearch(StatesGroup):
     waiting_city_name = State()
+
+class ExchangeState(StatesGroup):
+    waiting_amount = State()
