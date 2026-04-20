@@ -78,3 +78,39 @@ def create_city_keyboard(cities: list) -> ReplyKeyboardMarkup:
     buttons.append([KeyboardButton(text="🔍 Поиск по названию")])
     buttons.append([KeyboardButton(text="◀ На главную")])
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+
+def exchange_calculator_keyboard() -> InlineKeyboardMarkup:
+    """Клавиатура для обменника валют"""
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    from aiogram.utils.keyboard import InlineKeyboardBuilder
+    
+    builder = InlineKeyboardBuilder()
+    builder.button(text="🧮 Калькулятор валют", callback_data="exchange_calculator")
+    builder.button(text="📞 Связаться с менеджером", callback_data="exchange_contact_manager")
+    builder.button(text="◀ На главную", callback_data="back_main")
+    builder.adjust(1)
+    return builder.as_markup()
+
+def exchange_amount_keyboard(from_currency: bool = False) -> InlineKeyboardMarkup:
+    """Клавиатура выбора валют для калькулятора"""
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    from aiogram.utils.keyboard import InlineKeyboardBuilder
+    
+    builder = InlineKeyboardBuilder()
+    
+    if from_currency:
+        builder.button(text="🇷🇺 RUB", callback_data="exchange_to_RUB")
+        builder.button(text="💵 USD", callback_data="exchange_to_USD")
+        builder.button(text="🇰🇿 KZT", callback_data="exchange_to_KZT")
+        builder.button(text="🇹🇯 TJS", callback_data="exchange_to_TJS")
+        builder.button(text="🇺🇿 UZS", callback_data="exchange_to_UZS")
+    else:
+        builder.button(text="🇷🇺 RUB", callback_data="exchange_from_RUB")
+        builder.button(text="💵 USD", callback_data="exchange_from_USD")
+        builder.button(text="🇰🇿 KZT", callback_data="exchange_from_KZT")
+        builder.button(text="🇹🇯 TJS", callback_data="exchange_from_TJS")
+        builder.button(text="🇺🇿 UZS", callback_data="exchange_from_UZS")
+    
+    builder.button(text="◀ Назад", callback_data="exchange_back")
+    builder.adjust(1)
+    return builder.as_markup()
