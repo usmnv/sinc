@@ -132,27 +132,33 @@ async def get_guide_articles() -> List[Dict]:
     except Exception as e:
         logging.error(f"Ошибка get_guide_articles: {e}")
         return []
-# ========== КУРС ВАЛЮТ (из SQL/API) ==========
+# ========== КУРС ВАЛЮТ (из SQL с возможностью ручного обновления) ==========
 async def get_exchange_rate_from_db() -> dict:
-    """Получает курс валют из Supabase (если есть таблица) или из API"""
+    """Получает курс валют из Supabase (последняя запись)"""
+    from datetime import datetime
+    
     try:
-        # Пытаемся получить из таблицы exchange_rates
+        # Получаем последнюю запись из таблицы exchange_rates
         response = supabase.table("exchange_rates").select("*").order("created_at", desc=True).limit(1).execute()
+        
         if response.data:
             return {
-                "cny_to_usd": response.data[0].get("usd", 0.14),
+                "cny_to_usd": response.data[0].get("usd", 0.138),
                 "cny_to_rub": response.data[0].get("rub", 12.5),
                 "cny_to_kzt": response.data[0].get("kzt", 62.0),
-                "updated_at": response.data[0].get("created_at", "неизвестно")
+                "cny_to_tjs": response.data[0].get("tjs", 1.5),
+                "cny_to_uzs": response.data[0].get("uzs", 1700),
+                "updated_at": response.data[0].get("created_at", "неизвестно"),
+                "source": "база данных"
             }
     except Exception as e:
-        logging.error(f"Ошибка получения курса из БД: {e}")
+        print(f"Ошибка получения курса из БД: {e}")
     
-    # Если нет в БД - получаем из API
+    # Если в БД нет данных - получаем из API
     return await get_exchange_rate_from_api()
 
 async def get_exchange_rate_from_api() -> dict:
-    """Получает курс валют из внешнего API"""
+    """Получает курс валют из внешнего API и сохраняет в БД"""
     import aiohttp
     from datetime import datetime
     
@@ -164,32 +170,67 @@ async def get_exchange_rate_from_api() -> dict:
                     usd = data["rates"].get("USD", 0.138)
                     rub = data["rates"].get("RUB", 12.5)
                     kzt = data["rates"].get("KZT", 62.0)
+                    tjs = data["rates"].get("TJS", 1.5)
+                    uzs = data["rates"].get("UZS", 1700)
                     
                     result = {
                         "cny_to_usd": round(usd, 4),
                         "cny_to_rub": round(rub, 2),
                         "cny_to_kzt": round(kzt, 2),
-                        "updated_at": datetime.now().strftime("%d.%m.%Y %H:%M")
+                        "cny_to_tjs": round(tjs, 2),
+                        "cny_to_uzs": round(uzs, 0),
+                        "updated_at": datetime.now().strftime("%d.%m.%Y %H:%M"),
+                        "source": "API"
                     }
                     
                     # Сохраняем в БД
-                    try:
-                        supabase.table("exchange_rates").insert({
-                            "usd": result["cny_to_usd"],
-                            "rub": result["cny_to_rub"],
-                            "kzt": result["cny_to_kzt"]
-                        }).execute()
-                    except:
-                        pass
+                    await save_exchange_rate_to_db(result)
                     
                     return result
     except Exception as e:
-        logging.error(f"Ошибка API курса валют: {e}")
+        print(f"Ошибка API курса валют: {e}")
     
+    # Если API недоступен, пробуем получить последние данные из БД
+    try:
+        response = supabase.table("exchange_rates").select("*").order("created_at", desc=True).limit(1).execute()
+        if response.data:
+            return {
+                "cny_to_usd": response.data[0].get("usd", 0.138),
+                "cny_to_rub": response.data[0].get("rub", 12.5),
+                "cny_to_kzt": response.data[0].get("kzt", 62.0),
+                "cny_to_tjs": response.data[0].get("tjs", 1.5),
+                "cny_to_uzs": response.data[0].get("uzs", 1700),
+                "updated_at": response.data[0].get("created_at", "неизвестно"),
+                "source": "кэш БД",
+                "note": "Данные из кэша"
+            }
+    except:
+        pass
+    
+    # Возвращаем значения по умолчанию
     return {
         "cny_to_usd": 0.138,
         "cny_to_rub": 12.50,
         "cny_to_kzt": 62.00,
+        "cny_to_tjs": 1.50,
+        "cny_to_uzs": 1700,
         "updated_at": datetime.now().strftime("%d.%m.%Y %H:%M"),
-        "note": "Примерные значения"
+        "source": "значения по умолчанию",
+        "note": "Курсы не обновлены. Используются стандартные значения."
     }
+
+async def save_exchange_rate_to_db(rates: dict) -> bool:
+    """Сохраняет курс валют в базу данных"""
+    try:
+        supabase.table("exchange_rates").insert({
+            "usd": rates.get("cny_to_usd", 0.138),
+            "rub": rates.get("cny_to_rub", 12.5),
+            "kzt": rates.get("cny_to_kzt", 62.0),
+            "tjs": rates.get("cny_to_tjs", 1.5),
+            "uzs": rates.get("cny_to_uzs", 1700)
+        }).execute()
+        print("Курс валют сохранен в БД")
+        return True
+    except Exception as e:
+        print(f"Ошибка сохранения курса в БД: {e}")
+        return False
