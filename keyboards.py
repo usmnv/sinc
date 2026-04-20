@@ -1,7 +1,8 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 def main_menu_keyboard() -> ReplyKeyboardMarkup:
-    """Главное меню"""
+    """Главное меню - 5 основных кнопок"""
     buttons = [
         [KeyboardButton(text="🎓 Поступление")],
         [KeyboardButton(text="💱 Обменник валют")],
@@ -12,10 +13,12 @@ def main_menu_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
 def phone_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура для отправки номера телефона"""
     button = KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)
     return ReplyKeyboardMarkup(keyboard=[[button]], resize_keyboard=True)
 
 def goal_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура выбора цели"""
     buttons = [
         [KeyboardButton(text="🎓 Бакалавриат")],
         [KeyboardButton(text="🇨🇳 Изучение китайского языка")],
@@ -26,6 +29,7 @@ def goal_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
 def programs_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура выбора программы обучения"""
     buttons = [
         [KeyboardButton(text="1+4 (язык + бакалавриат)")],
         [KeyboardButton(text="1+3 (язык + бакалавриат ускоренный)")],
@@ -36,15 +40,21 @@ def programs_keyboard() -> ReplyKeyboardMarkup:
     ]
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
-def city_choice_keyboard(cities: list) -> ReplyKeyboardMarkup:
+def create_city_keyboard(cities: list) -> ReplyKeyboardMarkup:
+    """Динамическая клавиатура выбора города из списка БД"""
     buttons = []
-    for city in cities[:12]:
+    for city in cities[:15]:
         buttons.append([KeyboardButton(text=city)])
     buttons.append([KeyboardButton(text="🔍 Поиск по названию")])
     buttons.append([KeyboardButton(text="◀ На главную")])
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
+def city_choice_keyboard(cities: list) -> ReplyKeyboardMarkup:
+    """Алиас для обратной совместимости"""
+    return create_city_keyboard(cities)
+
 def guide_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура гида по жизни"""
     buttons = [
         [KeyboardButton(text="🏦 Как открыть банковский счет")],
         [KeyboardButton(text="📱 Мобильная связь")],
@@ -55,6 +65,7 @@ def guide_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
 def faq_keyboard() -> ReplyKeyboardMarkup:
+    """Клавиатура FAQ"""
     buttons = [
         [KeyboardButton(text="❓ Как зарегистрироваться в WeChat?")],
         [KeyboardButton(text="❓ Как завести Alipay?")],
@@ -65,25 +76,18 @@ def faq_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
 def back_to_main_button() -> ReplyKeyboardMarkup:
+    """Кнопка возврата в главное меню"""
     buttons = [[KeyboardButton(text="◀ На главную")]]
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
 def remove_keyboard() -> ReplyKeyboardRemove:
+    """Убирает клавиатуру"""
     return ReplyKeyboardRemove()
-def create_city_keyboard(cities: list) -> ReplyKeyboardMarkup:
-    """Динамическая клавиатура выбора города из списка БД"""
-    buttons = []
-    for city in cities[:15]:
-        buttons.append([KeyboardButton(text=city)])
-    buttons.append([KeyboardButton(text="🔍 Поиск по названию")])
-    buttons.append([KeyboardButton(text="◀ На главную")])
-    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+
+# ========== INLINE КЛАВИАТУРЫ ДЛЯ КАЛЬКУЛЯТОРА ВАЛЮТ ==========
 
 def exchange_calculator_keyboard() -> InlineKeyboardMarkup:
-    """Клавиатура для обменника валют"""
-    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-    from aiogram.utils.keyboard import InlineKeyboardBuilder
-    
+    """Клавиатура для обменника валют (Inline)"""
     builder = InlineKeyboardBuilder()
     builder.button(text="🧮 Калькулятор валют", callback_data="exchange_calculator")
     builder.button(text="📞 Связаться с менеджером", callback_data="exchange_contact_manager")
@@ -92,10 +96,7 @@ def exchange_calculator_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 def exchange_amount_keyboard(from_currency: bool = False) -> InlineKeyboardMarkup:
-    """Клавиатура выбора валют для калькулятора"""
-    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-    from aiogram.utils.keyboard import InlineKeyboardBuilder
-    
+    """Клавиатура выбора валют для калькулятора (Inline)"""
     builder = InlineKeyboardBuilder()
     
     if from_currency:
